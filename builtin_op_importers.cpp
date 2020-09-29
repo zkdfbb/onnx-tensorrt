@@ -25,6 +25,9 @@
 #include "plugin.hpp"
 #include "FancyActivation.hpp"
 #include "ResizeNearest.hpp"
+#include "ResizeBilinear.hpp"
+#include "Slice.hpp"
+#include "Mish.hpp"
 #include "Split.hpp"
 #include "InstanceNormalization.hpp"
 
@@ -1722,7 +1725,10 @@ DEFINE_BUILTIN_OP_IMPORTER(Slice) {
     // slice contains full dimension
     if (axes[i] != nbDims-1 && axes[i] != nbDims)
     {
-      ASSERT((ends[i] - starts[i]) == dims.d[axis], ErrorCode::kUNSUPPORTED_NODE);
+      // ASSERT((ends[i] - starts[i]) == dims.d[axis], ErrorCode::kUNSUPPORTED_NODE);
+      ASSERT(axes.size() == 1, ErrorCode::kUNSUPPORTED_NODE);
+      RETURN_FIRST_OUTPUT(
+          ctx->addPlugin(new SlicePlugin(axis, starts[i], ends[i]), {&inputs.at(0).tensor()}));
     }
     else
     {
@@ -2125,9 +2131,22 @@ DEFINE_BUILTIN_OP_IMPORTER(Upsample) {
   }
   auto scale = {height_scale, width_scale};
   auto mode = attrs.get<std::string>("mode", "nearest");
-  ASSERT(mode == "nearest", ErrorCode::kUNSUPPORTED_NODE);
-  RETURN_FIRST_OUTPUT(
-      ctx->addPlugin(new ResizeNearestPlugin(scale), {&inputs.at(0).tensor()}));
+  // ASSERT(mode == "nearest", ErrorCode::kUNSUPPORTED_NODE);
+  if(mode == "nearest"){
+      RETURN_FIRST_OUTPUT(
+          ctx->addPlugin(new ResizeNearestPlugin(scale), {&inputs.at(0).tensor()}));
+  }else{
+    RETURN_FIRST_OUTPUT(
+          ctx->addPlugin(new ResizeBilinearPlugin(scale), {&inputs.at(0).tensor()}));
+  }
+}
+
+DEFINE_BUILTIN_OP_IMPORTER(Mish) {
+    ASSERT(inputs.at(0).is_tensor(),  ErrorCode::kUNSUPPORTED_NODE); // input
+    RETURN_FIRST_OUTPUT(
+            ctx->addPlugin(
+                    new MishPlugin(),
+                    {&inputs.at(0).tensor()}));
 }
 
 } // namespace

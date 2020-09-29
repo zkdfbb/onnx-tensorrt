@@ -70,7 +70,10 @@ set(ONNX2TRT_PATCH 0)
 set(PLUGIN_SOURCES
   FancyActivation.cu
   ResizeNearest.cu
+  ResizeBilinear.cu
+  Slice.cu
   Split.cu
+  Mish.cu
   InstanceNormalization.cpp
   plugin.cpp
   )
@@ -159,6 +162,8 @@ if(${CMAKE_VERSION} VERSION_LESS ${CMAKE_VERSION_THRESHOLD})
     -lineinfo \
     -g \
     --expt-extended-lambda \
+    -rdc=true \
+    -lcudadevrt \
     ${GENCODES} \
     ")
   
@@ -174,6 +179,8 @@ else()
     -lineinfo \
     -g \
     --expt-extended-lambda \
+    -rdc=true \
+    -lcudadevrt \
     ${GENCODES} \
     ")
 
@@ -183,7 +190,8 @@ else()
 
 endif()  
   
-
+MESSAGE(STATUS "CUDA_NVCC_FLAGS: ${CUDA_NVCC_FLAGS}")
+MESSAGE(STATUS "CMAKE_CUDA_FLAGS: ${CMAKE_CUDA_FLAGS}")
 
 # Specify the cuda host compiler to use the same compiler as cmake.
 set(CUDA_HOST_COMPILER ${CMAKE_CXX_COMPILER})

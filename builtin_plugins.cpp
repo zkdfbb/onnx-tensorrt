@@ -25,8 +25,12 @@
 #include "PluginFactory.hpp"
 #include "FancyActivation.hpp"
 #include "ResizeNearest.hpp"
+#include "ResizeBilinear.hpp"
+#include "Slice.hpp"
+#include "Mish.hpp"
 #include "Split.hpp"
 #include "InstanceNormalization.hpp"
+
 
 namespace onnx2trt {
 
@@ -71,8 +75,11 @@ static bool registerBuiltinPlugin(const char* plugin_type,
 
 REGISTER_BUILTIN_PLUGIN("FancyActivation",       FancyActivationPlugin);
 REGISTER_BUILTIN_PLUGIN("ResizeNearest",         ResizeNearestPlugin);
+REGISTER_BUILTIN_PLUGIN("ResizeBilinear",        ResizeBilinearPlugin);
+REGISTER_BUILTIN_PLUGIN("Slice"        ,         SlicePlugin);
 REGISTER_BUILTIN_PLUGIN("Split"        ,         SplitPlugin);
 REGISTER_BUILTIN_PLUGIN("InstanceNormalization", InstanceNormalizationPlugin);
+REGISTER_BUILTIN_PLUGIN("Mish",                  MishPlugin);
 
 REGISTER_BUILTIN_NVPLUGIN("Concat", ConcatPlugin);
 
