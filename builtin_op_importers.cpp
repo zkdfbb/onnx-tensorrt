@@ -628,6 +628,7 @@ DEFINE_BUILTIN_OP_IMPORTER(Ceil) {
                                      {&inputs.at(0).tensor()}));
 }
 
+/*
 DEFINE_BUILTIN_OP_IMPORTER(Cast) {
     // Get input node.
     ASSERT(inputs.at(0).is_tensor(), ErrorCode::kUNSUPPORTED_NODE);
@@ -640,6 +641,7 @@ DEFINE_BUILTIN_OP_IMPORTER(Cast) {
     layer->setPrecision(dtype);
     RETURN_FIRST_OUTPUT(layer);
 }
+*/
 
 DEFINE_BUILTIN_OP_IMPORTER(Clip) {
   ASSERT(inputs.at(0).is_tensor(), ErrorCode::kUNSUPPORTED_NODE);
@@ -1241,7 +1243,9 @@ DEFINE_BUILTIN_OP_IMPORTER(MaxPool) {
   get_kernel_params(node, get_DimsHW_from_CHW(dims),
                     &kernel_size, &strides, &beg_padding, &end_padding);
   if( beg_padding != end_padding ) {
-
+#if NV_TENSORRT_MAJOR < 4
+    ASSERT(beg_padding == end_padding, ErrorCode::kUNSUPPORTED_NODE);
+#else
     auto* layer = ctx->network()->addPadding(*tensor_ptr, beg_padding, end_padding);
     ASSERT(layer, ErrorCode::kUNSUPPORTED_NODE);
     tensor_ptr = layer->getOutput(0);
@@ -1277,6 +1281,7 @@ DEFINE_BUILTIN_OP_IMPORTER(MaxPool) {
       nvinfer1::ElementWiseOperation::kSUM);
     ASSERT(sum_layer, ErrorCode::kUNSUPPORTED_NODE);
     tensor_ptr = sum_layer->getOutput(0);
+#endif
   }
   nvinfer1::IPoolingLayer* layer = ctx->network()->addPooling(
     *tensor_ptr, nvinfer1::PoolingType::kMAX, kernel_size);
@@ -2144,9 +2149,7 @@ DEFINE_BUILTIN_OP_IMPORTER(Upsample) {
 DEFINE_BUILTIN_OP_IMPORTER(Mish) {
     ASSERT(inputs.at(0).is_tensor(),  ErrorCode::kUNSUPPORTED_NODE); // input
     RETURN_FIRST_OUTPUT(
-            ctx->addPlugin(
-                    new MishPlugin(),
-                    {&inputs.at(0).tensor()}));
+          ctx->addPlugin(new MishPlugin(), {&inputs.at(0).tensor()}));
 }
 
 } // namespace

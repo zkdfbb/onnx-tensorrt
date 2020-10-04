@@ -291,11 +291,11 @@ inline nvinfer1::ITensor& convertToTensor(TensorOrWeights& input, IImporterConte
     }
     else
     {
+        std::cerr << "addConstant in convertToTensor" << std::endl;
         // Handle non-tensor indices input by adding a new constant layer to the network.
-        const ShapedWeights& weights = input.weights();
-        return *(ctx->network()->addConstant(weights.shape, weights)->getOutput(0));
+        // const ShapedWeights& weights = input.weights();
+        // return *(ctx->network()->addConstant(weights.shape, weights)->getOutput(0));
     }
-
 }
 
 inline nvinfer1::ITensor& convert_output_weight_to_tensor(TensorOrWeights& input, IImporterContext* ctx)
@@ -306,13 +306,13 @@ inline nvinfer1::ITensor& convert_output_weight_to_tensor(TensorOrWeights& input
     }
     else
     {
+        std::cerr << "addConstant in convert_output_weight_to_tensor" << std::endl;
         // Convert weight output to tensor output. Strip batch dimension here.
-        const ShapedWeights& weights = input.weights();
-        nvinfer1::Dims tensor_shape = weights.shape;
-        tensor_shape= set_dims_CHW(remove_dim(tensor_shape, 0));
-        return *(ctx->network()->addConstant(tensor_shape, weights)->getOutput(0));
+        // const ShapedWeights& weights = input.weights();
+        // nvinfer1::Dims tensor_shape = weights.shape;
+        // tensor_shape= set_dims_CHW(remove_dim(tensor_shape, 0));
+        // return *(ctx->network()->addConstant(tensor_shape, weights)->getOutput(0));
     }
-
 }
 
 inline int div_ceil(int n, int d) {
