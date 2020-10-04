@@ -22,12 +22,45 @@ cmake_minimum_required(VERSION 3.2 FATAL_ERROR)
 # The version of CMake which is not compatible with the old CUDA CMake commands.
 set(CMAKE_VERSION_THRESHOLD "3.10.0")
 
+OPTION(TX2 "make for x86 or tx2" OFF)
+if(TX2)
+  SET(CMAKE_SYSTEM_NAME Linux)
+  SET(CMAKE_CXX_STANDARD 11)
+  SET(CMAKE_CXX_FLAGS "-std=c++11 -g -Wno-write-strings")
+  SET(CMAKE_BUILD_TYPE "Release")
+
+  SET(AIRBENDER_DEV_ROOT /home/ais01/codes/wenbo/airbender-linux-devtools)
+  SET(CMAKE_C_COMPILER   ${AIRBENDER_DEV_ROOT}/tegra-4.9-nv/usr/bin/aarch64-gnu-linux/aarch64-gnu-linux-gcc)
+  SET(CMAKE_CXX_COMPILER  ${AIRBENDER_DEV_ROOT}/tegra-4.9-nv/usr/bin/aarch64-gnu-linux/aarch64-gnu-linux-g++)
+  SET(CMAKE_CUDA_COMPILER /usr/local/cuda/bin/nvcc)
+  SET(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fPIC")
+  SET(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC")
+  SET(CUDA_TOOLKIT_ROOT_DIR /usr/local/cuda)
+
+  SET(CMAKE_FIND_ROOT_PATH ${AIRBENDER_DEV_ROOT}/protobuf3.7.1 ${AIRBENDER_DEV_ROOT}/tegra-4.9-nv ${AIRBENDER_DEV_ROOT}/tensorrt3 ${AIRBENDER_DEV_ROOT}/tegra-t18x)
+  SET(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
+  SET(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
+  SET(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
+
+  INCLUDE_DIRECTORIES("${AIRBENDER_DEV_ROOT}/protobuf3.7.1/include")
+  INCLUDE_DIRECTORIES("${AIRBENDER_DEV_ROOT}/tensorrt3/include")
+  INCLUDE_DIRECTORIES("${AIRBENDER_DEV_ROOT}/tegra-t18x/usr/include")
+  INCLUDE_DIRECTORIES("${AIRBENDER_DEV_ROOT}/cuda-8.0/include")
+  LINK_DIRECTORIES("${AIRBENDER_DEV_ROOT}/protobuf3.7.1/lib")
+  LINK_DIRECTORIES("${AIRBENDER_DEV_ROOT}/tensorrt3/lib")
+  LINK_DIRECTORIES("${AIRBENDER_DEV_ROOT}/cuda-8.0/lib")
+  LINK_DIRECTORIES("${AIRBENDER_DEV_ROOT}/tegra-t18x/usr/lib")
+else()
+  SET(CMAKE_CUDA_COMPILER /usr/local/cuda-8.0/bin/nvcc)
+  INCLUDE_DIRECTORIES(/usr/local/cuda-8.0/include)
+  LINK_DIRECTORIES(/usr/local/cuda-8.0/lib64)
+endif()
+
 if(${CMAKE_VERSION} VERSION_LESS ${CMAKE_VERSION_THRESHOLD})
   project(onnx2trt LANGUAGES CXX C)
 else()
   project(onnx2trt LANGUAGES CXX C CUDA)
 endif() 
-
 
 #
 # CUDA Configuration
@@ -107,6 +140,7 @@ set(API_TESTS_SOURCES
 set(HEADERS
   NvOnnxParser.h
   NvOnnxParserRuntime.h
+  NvOnnxParserTypedefs.h
 )
 
 if (NOT TARGET protobuf::libprotobuf)
@@ -189,7 +223,12 @@ else()
   endif()
 
 endif()  
-  
+
+if(TX2)
+  SET(CUDA_NVCC_FLAGS "${CUDA_NVCC_FLAGS} -Xcompiler '-fPIC' -ccbin ${CMAKE_C_COMPILER} -I ${AIRBENDER_DEV_ROOT}/cuda-8.0/include -L ${AIRBENDER_DEV_ROOT}/cuda-8.0/lib")
+  SET(CMAKE_CUDA_FLAGS "${CMAKE_CUDA_FLAGS} -Xcompiler '-fPIC' -ccbin ${CMAKE_C_COMPILER} -I ${AIRBENDER_DEV_ROOT}/cuda-8.0/include -L ${AIRBENDER_DEV_ROOT}/cuda-8.0/lib")
+endif()
+
 MESSAGE(STATUS "CUDA_NVCC_FLAGS: ${CUDA_NVCC_FLAGS}")
 MESSAGE(STATUS "CMAKE_CUDA_FLAGS: ${CMAKE_CUDA_FLAGS}")
 

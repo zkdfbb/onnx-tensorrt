@@ -25,9 +25,27 @@
 
 ##############################################
 
+set -e -x
+
 rm -rf build
 mkdir build && cd build
-cmake .. -DTENSORRT_ROOT=/usr/local/tensorrt -DGPU_ARCHS="61"
-make -j32
-sudo make install
-cd ..
+
+function make12(){
+    cmake-3.10.2 \
+        -DTENSORRT_ROOT=/home/ais01/codes/wenbo/airbender-linux-devtools/tensorrt3 \
+        -DGPU_ARCHS="62" \
+        -DTX2=on ..
+    make -j32
+    sudo make install
+    cd ..
+    rsync -avP build/onnx2trt 11:/usr/local/bin/onnx2trt
+    rsync -avP build/lib* 11:/usr/local/lib/
+}
+
+function make(){
+    cmake .. -DTENSORRT_ROOT=/usr/local/tensorrt -DGPU_ARCHS="61"
+    make -j32
+    sudo make install
+}
+
+$@
