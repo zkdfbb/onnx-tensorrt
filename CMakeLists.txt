@@ -107,6 +107,7 @@ set(PLUGIN_SOURCES
   Slice.cu
   Split.cu
   Mish.cu
+  ElementWiseMul.cu
   InstanceNormalization.cpp
   plugin.cpp
   )

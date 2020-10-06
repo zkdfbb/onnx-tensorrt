@@ -29,6 +29,7 @@
 #include "Slice.hpp"
 #include "Mish.hpp"
 #include "Split.hpp"
+#include "ElementWiseMul.hpp"
 #include "InstanceNormalization.hpp"
 
 #include <numeric> // For std::iota
@@ -36,6 +37,41 @@
 namespace onnx2trt {
 
 namespace {
+
+#define IGNORE_UNUSED_GLOBAL(x) \
+  static void _ignore_unused2_##x(); \
+  static void _ignore_unused1_##x() { (void)_ignore_unused2_##x; (void)x; } \
+  static void _ignore_unused2_##x() { (void)_ignore_unused1_##x; } \
+  struct SwallowSemicolon##x {}
+
+#define DECLARE_BUILTIN_OP_IMPORTER(op) \
+  NodeImportResult import##op(IImporterContext* ctx, \
+                              ::ONNX_NAMESPACE::NodeProto const& node, \
+                              std::vector<TensorOrWeights>& inputs)
+
+#define DEFINE_BUILTIN_OP_IMPORTER(op) \
+  NodeImportResult import##op(IImporterContext* ctx, \
+                          ::ONNX_NAMESPACE::NodeProto const& node, \
+                          std::vector<TensorOrWeights>& inputs); \
+  static const bool op##_registered_builtin_op = \
+      registerBuiltinOpImporter(#op, import##op); \
+  IGNORE_UNUSED_GLOBAL(op##_registered_builtin_op); \
+  NodeImportResult import##op(IImporterContext* ctx, \
+                              ::ONNX_NAMESPACE::NodeProto const& node, \
+                              std::vector<TensorOrWeights>& inputs)
+
+#define RETURN_FIRST_OUTPUT(layer) do { \
+  nvinfer1::ILayer* layer_ptr = layer; \
+  ASSERT(layer_ptr, ErrorCode::kUNSUPPORTED_NODE); \
+  return {{layer_ptr->getOutput(0)}}; \
+} while(0)
+
+#define RETURN_IDENTITY(input) do { \
+  TensorOrWeights output = identity(ctx, input); \
+  ASSERT(output, ErrorCode::kUNSUPPORTED_NODE); \
+  return {{output}}; \
+} while(0)
+
 
 enum { BATCH_DIM = 0 };
 
@@ -313,6 +349,19 @@ combineTensorsElementwise(IImporterContext* ctx,
     // Note: Single input must be wrapped in identity to avoid messing up network outputs
     return {{identity(ctx, combined)}};
   }
+
+#if NV_TENSORRT_MAJOR < 4
+  if(binary_op == nvinfer1::ElementWiseOperation::kPROD){
+    std::vector<nvinfer1::ITensor*> tensors;
+    for( auto& input : inputs ) {
+      ASSERT(input.is_tensor(), ErrorCode::kUNSUPPORTED_NODE);
+      tensors.push_back(&input.tensor());
+    }
+    RETURN_FIRST_OUTPUT(
+          ctx->addPlugin(new ElementWiseMulPlugin(tensors.size()), {tensors}));
+  }
+#endif
+
   for( size_t i=1; i<input_tensors.size(); ++i ) {
     nvinfer1::ITensor* tensor = input_tensors.at(i);
     ASSERT(tensor->getDimensions().nbDims == combined->getDimensions().nbDims,
@@ -405,39 +454,6 @@ bool registerBuiltinOpImporter(std::string op,
   return inserted;
 }
 
-#define IGNORE_UNUSED_GLOBAL(x) \
-  static void _ignore_unused2_##x(); \
-  static void _ignore_unused1_##x() { (void)_ignore_unused2_##x; (void)x; } \
-  static void _ignore_unused2_##x() { (void)_ignore_unused1_##x; } \
-  struct SwallowSemicolon##x {}
-
-#define DECLARE_BUILTIN_OP_IMPORTER(op) \
-  NodeImportResult import##op(IImporterContext* ctx, \
-                              ::ONNX_NAMESPACE::NodeProto const& node, \
-                              std::vector<TensorOrWeights>& inputs)
-
-#define DEFINE_BUILTIN_OP_IMPORTER(op) \
-  NodeImportResult import##op(IImporterContext* ctx, \
-                          ::ONNX_NAMESPACE::NodeProto const& node, \
-                          std::vector<TensorOrWeights>& inputs); \
-  static const bool op##_registered_builtin_op = \
-      registerBuiltinOpImporter(#op, import##op); \
-  IGNORE_UNUSED_GLOBAL(op##_registered_builtin_op); \
-  NodeImportResult import##op(IImporterContext* ctx, \
-                              ::ONNX_NAMESPACE::NodeProto const& node, \
-                              std::vector<TensorOrWeights>& inputs)
-
-#define RETURN_FIRST_OUTPUT(layer) do { \
-  nvinfer1::ILayer* layer_ptr = layer; \
-  ASSERT(layer_ptr, ErrorCode::kUNSUPPORTED_NODE); \
-  return {{layer_ptr->getOutput(0)}}; \
-} while(0)
-
-#define RETURN_IDENTITY(input) do { \
-  TensorOrWeights output = identity(ctx, input); \
-  ASSERT(output, ErrorCode::kUNSUPPORTED_NODE); \
-  return {{output}}; \
-} while(0)
 
 #if NV_TENSORRT_MAJOR >= 4
 // Helper for ArgMax/ArgMin
