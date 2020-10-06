@@ -30,7 +30,7 @@ set -e -x
 rm -rf build
 mkdir build && cd build
 
-function make12(){
+function cx2(){
     cmake-3.10.2 \
         -DTENSORRT_ROOT=/home/ais01/codes/wenbo/airbender-linux-devtools/tensorrt3 \
         -DGPU_ARCHS="62" \
@@ -42,7 +42,7 @@ function make12(){
     rsync -avP build/lib* 11:/usr/local/lib/
 }
 
-function make(){
+function x86(){
     cmake .. -DTENSORRT_ROOT=/usr/local/tensorrt -DGPU_ARCHS="61"
     make -j32
     sudo make install

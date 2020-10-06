@@ -20,6 +20,7 @@
  * DEALINGS IN THE SOFTWARE.
  */
 
+
 #include "ElementWiseMul.hpp"
 #include <cuda_fp16.h>
 #include <cassert>
@@ -40,27 +41,39 @@ int ElementWiseMulPlugin::initialize() {
 
 template <typename Data>
 __global__ void element_wise_mul(const int n,
-        const int batchsize, const int channels,
-        const int height, const int width, const int size,
-        const Data *idata, const Data *jdata, Data* odata) {
-    int idx = threadIdx.x + blockIdx.x * blockDim.x;
-    if (idx < n) {
-      for (int b = 0; b < batchsize; ++b) {
-        for (int c = 0; c < channels; ++c) {
-           odata[idx] = idata[idx] * jdata[idx];
-          //odata[idx] = 1.;
-          //for(int i = 0; i < size; ++i){
-          //    odata[idx] *= *(idata + i)[idx];
-          //}
-          idx += n;
-        }
+      const int batchsize, const int channels,
+      const int height, const int width,
+      const Data *idata, const Data *jdata, Data* odata) {
+  int idx = threadIdx.x + blockIdx.x * blockDim.x;
+  if (idx < n) {
+    for (int b = 0; b < batchsize; ++b) {
+      for (int c = 0; c < channels; ++c) {
+        odata[idx] = idata[idx] * jdata[idx];
+        idx += n;
       }
     }
   }
+}
+
+template <typename Data>
+__global__ void element_wise_mul(const int n,
+      const int batchsize, const int channels,
+      const int height, const int width,
+      const Data *idata, const Data *jdata, const Data *kdata, Data* odata) {
+  int idx = threadIdx.x + blockIdx.x * blockDim.x;
+  if (idx < n) {
+    for (int b = 0; b < batchsize; ++b) {
+      for (int c = 0; c < channels; ++c) {
+        odata[idx] = idata[idx] * jdata[idx] * kdata[idx];
+        idx += n;
+      }
+    }
+  }
+}
 
 int ElementWiseMulPlugin::enqueue(int batchSize,
-                                 const void *const *inputs, void **outputs,
-                                 void *workspace, cudaStream_t stream) {
+                                  const void *const *inputs, void **outputs,
+                                  void *workspace, cudaStream_t stream) {
   auto const& input_dims = this->getInputDims(0);
   const int channels = input_dims.d[0];
   const int input_height = input_dims.d[1];
@@ -69,12 +82,22 @@ int ElementWiseMulPlugin::enqueue(int batchSize,
   const int num_threads = 512;
   const int num_blocks = (num_kernels + num_threads - 1) / num_threads;
   if (getDataType() == nvinfer1::DataType::kFLOAT) {
-    cout << "size: " << _size << endl;
-    element_wise_mul<<<num_blocks, num_threads>>>(num_kernels, batchSize, channels, 
-      input_height, input_width, _size,
+    if(_size == 2){
+    element_wise_mul<<<num_blocks, num_threads>>>(num_kernels, batchSize, channels,
+      input_height, input_width,
       static_cast<float const*>(inputs[0]),
       static_cast<float const*>(inputs[1]),
       static_cast<float*>(outputs[0]));
+    } else if(_size == 3){
+    element_wise_mul<<<num_blocks, num_threads>>>(num_kernels, batchSize, channels,
+      input_height, input_width,
+      static_cast<float const*>(inputs[0]),
+      static_cast<float const*>(inputs[1]),
+      static_cast<float const*>(inputs[2]),
+      static_cast<float*>(outputs[0]));
+    } else {
+        assert(_size <= 3);
+    }
   } else {
     return -1;
   }

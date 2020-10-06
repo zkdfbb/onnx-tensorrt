@@ -357,6 +357,7 @@ combineTensorsElementwise(IImporterContext* ctx,
       ASSERT(input.is_tensor(), ErrorCode::kUNSUPPORTED_NODE);
       tensors.push_back(&input.tensor());
     }
+    ASSERT(tensors.size() <= 3, ErrorCode::kUNSUPPORTED_NODE);
     RETURN_FIRST_OUTPUT(
           ctx->addPlugin(new ElementWiseMulPlugin(tensors.size()), {tensors}));
   }
