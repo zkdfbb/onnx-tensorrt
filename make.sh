@@ -43,7 +43,7 @@ function cx2(){
 function x86(){
     cmake .. -DTENSORRT_ROOT=/usr/local/tensorrt -DGPU_ARCHS="61"
     make -j32
-    sudo make install
+    make install
 }
 
 $@
