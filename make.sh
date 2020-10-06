@@ -36,10 +36,8 @@ function cx2(){
         -DGPU_ARCHS="62" \
         -DTX2=on ..
     make -j32
-    sudo make install
-    cd ..
-    rsync -avP build/onnx2trt 11:/usr/local/bin/onnx2trt
-    rsync -avP build/lib* 11:/usr/local/lib/
+    rsync -avP onnx2trt 11:/usr/local/bin/onnx2trt
+    rsync -avP lib* 11:/usr/local/lib/
 }
 
 function x86(){

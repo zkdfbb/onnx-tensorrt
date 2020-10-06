@@ -361,8 +361,7 @@ combineTensorsElementwise(IImporterContext* ctx,
     RETURN_FIRST_OUTPUT(
           ctx->addPlugin(new ElementWiseMulPlugin(tensors.size()), {tensors}));
   }
-#endif
-
+#else
   for( size_t i=1; i<input_tensors.size(); ++i ) {
     nvinfer1::ITensor* tensor = input_tensors.at(i);
     ASSERT(tensor->getDimensions().nbDims == combined->getDimensions().nbDims,
@@ -373,6 +372,7 @@ combineTensorsElementwise(IImporterContext* ctx,
     combined = layer->getOutput(0);
   }
   return {{combined}};
+#endif
 }
 
 // Note: As of TRT 4, ElementWise + Constant is preferred over Scale layer
