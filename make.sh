@@ -36,14 +36,15 @@ function cx2(){
         -DGPU_ARCHS="62" \
         -DTX2=on ..
     make -j32
-    rsync -avP onnx2trt 11:/usr/local/bin/onnx2trt
-    rsync -avP lib* 11:/usr/local/lib/
+    sudo make install
+    rsync -avP onnx2trt 11:/usr/bin/onnx2trt
+    rsync -avP libnvonnxparser_runtime.so 11:/usr/lib/
 }
 
 function x86(){
     cmake .. -DTENSORRT_ROOT=/usr/local/tensorrt -DGPU_ARCHS="61"
     make -j32
-    make install
+    sudo make install
 }
 
 $@
