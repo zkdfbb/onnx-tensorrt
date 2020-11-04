@@ -29,6 +29,8 @@
 #include "Slice.hpp"
 #include "Mish.hpp"
 #include "ElementWiseMul.hpp"
+#include "ReduceSum.hpp"
+#include "TopK.hpp"
 #include "Split.hpp"
 #include "InstanceNormalization.hpp"
 
@@ -82,6 +84,8 @@ REGISTER_BUILTIN_PLUGIN("Split"        ,         SplitPlugin);
 REGISTER_BUILTIN_PLUGIN("InstanceNormalization", InstanceNormalizationPlugin);
 REGISTER_BUILTIN_PLUGIN("Mish",                  MishPlugin);
 REGISTER_BUILTIN_PLUGIN("ElementWiseMul",        ElementWiseMulPlugin);
+REGISTER_BUILTIN_PLUGIN("ReduceSum",             ReduceSumPlugin);
+REGISTER_BUILTIN_PLUGIN("TopK",                  TopKPlugin);
 
 REGISTER_BUILTIN_NVPLUGIN("Concat", ConcatPlugin);
 

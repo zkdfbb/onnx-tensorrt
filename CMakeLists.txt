@@ -108,6 +108,8 @@ set(PLUGIN_SOURCES
   Split.cu
   Mish.cu
   ElementWiseMul.cu
+  ReduceSum.cu
+  TopK.cu
   InstanceNormalization.cpp
   plugin.cpp
   )
@@ -295,12 +297,12 @@ target_link_libraries(nvonnxparser_plugin ${TENSORRT_LIBRARY})
 add_library(nvonnxparser SHARED ${IMPORTER_SOURCES})
 target_include_directories(nvonnxparser PUBLIC ${CUDA_INCLUDE_DIRS} ${ONNX_INCLUDE_DIRS} ${TENSORRT_INCLUDE_DIR} ${CUDNN_INCLUDE_DIR})
 target_link_libraries(nvonnxparser PUBLIC onnx_proto nvonnxparser_plugin ${PROTOBUF_LIBRARY} ${CUDNN_LIBRARY} ${TENSORRT_LIBRARY})
-# set_target_properties(nvonnxparser PROPERTIES
-#   VERSION   ${ONNX2TRT_MAJOR}.${ONNX2TRT_MINOR}.${ONNX2TRT_PATCH}
-#   SOVERSION ${ONNX2TRT_MAJOR}
-#   LINK_DEPENDS ${PARSER_LINKER_SCRIPT}
-#   LINK_FLAGS "-Wl,--version-script=${PARSER_LINKER_SCRIPT}"
-# )
+set_target_properties(nvonnxparser PROPERTIES
+  VERSION   ${ONNX2TRT_MAJOR}.${ONNX2TRT_MINOR}.${ONNX2TRT_PATCH}
+  SOVERSION ${ONNX2TRT_MAJOR}
+  LINK_DEPENDS ${PARSER_LINKER_SCRIPT}
+  LINK_FLAGS "-Wl,--version-script=${PARSER_LINKER_SCRIPT}"
+)
 add_library(nvonnxparser_static STATIC ${IMPORTER_SOURCES})
 target_include_directories(nvonnxparser_static PUBLIC ${CUDA_INCLUDE_DIRS} ${ONNX_INCLUDE_DIRS} ${TENSORRT_INCLUDE_DIR} ${CUDNN_INCLUDE_DIR})
 target_link_libraries(nvonnxparser_static PUBLIC onnx_proto nvonnxparser_plugin ${PROTOBUF_LIBRARY} ${CUDNN_LIBRARY} ${TENSORRT_LIBRARY})
@@ -311,12 +313,12 @@ target_link_libraries(nvonnxparser_static PUBLIC onnx_proto nvonnxparser_plugin 
 add_library(nvonnxparser_runtime SHARED ${RUNTIME_SOURCES})
 target_include_directories(nvonnxparser_runtime PUBLIC ${CUDA_INCLUDE_DIRS} ${TENSORRT_INCLUDE_DIR} ${CUDNN_INCLUDE_DIR})
 target_link_libraries(nvonnxparser_runtime PUBLIC nvonnxparser_plugin ${CUDNN_LIBRARY} ${TENSORRT_LIBRARY})
-# set_target_properties(nvonnxparser_runtime PROPERTIES
-#   VERSION   ${ONNX2TRT_MAJOR}.${ONNX2TRT_MINOR}.${ONNX2TRT_PATCH}
-#   SOVERSION ${ONNX2TRT_MAJOR}
-#   LINK_DEPENDS ${RUNTIME_LINKER_SCRIPT}
-#   LINK_FLAGS "-Wl,--version-script=${RUNTIME_LINKER_SCRIPT}"
-# )
+set_target_properties(nvonnxparser_runtime PROPERTIES
+  VERSION   ${ONNX2TRT_MAJOR}.${ONNX2TRT_MINOR}.${ONNX2TRT_PATCH}
+  SOVERSION ${ONNX2TRT_MAJOR}
+  LINK_DEPENDS ${RUNTIME_LINKER_SCRIPT}
+  LINK_FLAGS "-Wl,--version-script=${RUNTIME_LINKER_SCRIPT}"
+)
 add_library(nvonnxparser_runtime_static STATIC ${RUNTIME_SOURCES})
 target_include_directories(nvonnxparser_runtime_static PUBLIC ${CUDA_INCLUDE_DIRS} ${TENSORRT_INCLUDE_DIR} ${CUDNN_INCLUDE_DIR})
 target_link_libraries(nvonnxparser_runtime_static PUBLIC nvonnxparser_plugin ${CUDNN_LIBRARY} ${TENSORRT_LIBRARY})

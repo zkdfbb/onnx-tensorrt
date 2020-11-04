@@ -238,9 +238,10 @@ int main(int argc, char* argv[]) {
       cerr << "ERROR: Int8 mode not yet supported" << endl;
       return -5;
     }
+    // cout<<"hello?"<<endl;
     trt_builder->setDebugSync(debug_builder);
     auto trt_engine = common::infer_object(trt_builder->buildCudaEngine(*trt_network.get()));
-
+    // cout<<"get out"<<endl;
     auto engine_plan = common::infer_object(trt_engine->serialize());
     std::ofstream engine_file(engine_filename.c_str());
     if (!engine_file) {

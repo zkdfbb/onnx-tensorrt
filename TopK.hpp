@@ -28,35 +28,28 @@
 // #include <thrust/device_vector.h>
 #include <cassert>
 
-class SlicePlugin final : public onnx2trt::Plugin {
-  int  _axis;
-  int _start;
-  int _end;
+class TopKPlugin final : public onnx2trt::Plugin {
+  int _axis;
   nvinfer1::Dims _output_dims;
 protected:
   void deserialize(void const* serialData, size_t serialLength) {
     deserializeBase(serialData, serialLength);
     deserialize_value(&serialData, &serialLength, &_axis);
-    deserialize_value(&serialData, &serialLength, &_start);
-    deserialize_value(&serialData, &serialLength, &_end);
   }
   size_t getSerializationSize() override {
-    return serialized_size(_axis) + serialized_size(_start) + serialized_size(_end) + getBaseSerializationSize();
+    return serialized_size(_axis) + getBaseSerializationSize();
   }
   void serialize(void *buffer) override {
     serializeBase(buffer);
     serialize_value(&buffer, _axis);
-    serialize_value(&buffer, _start);
-    serialize_value(&buffer, _end);
   }
 public:
-  SlicePlugin(int const& axis, int const &start, int const &end)
-    : _axis(axis), _start(start), _end(end) {
+  TopKPlugin(int const &axis): _axis(axis){
   }
-  SlicePlugin(void const* serialData, size_t serialLength) {
+  TopKPlugin(void const* serialData, size_t serialLength) {
     this->deserialize(serialData, serialLength);
   }
-  virtual const char* getPluginType() const override { return "Slice"; }
+  virtual const char* getPluginType() const override { return "TopK"; }
   virtual int getNbOutputs() const override { return 1; }
   virtual nvinfer1::Dims getOutputDimensions(int index,
                                              const nvinfer1::Dims *inputs, int nbInputDims) override;

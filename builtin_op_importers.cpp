@@ -29,6 +29,8 @@
 #include "Slice.hpp"
 #include "Mish.hpp"
 #include "Split.hpp"
+#include "ReduceSum.hpp"
+#include "TopK.hpp"
 #include "ElementWiseMul.hpp"
 #include "InstanceNormalization.hpp"
 
@@ -456,7 +458,7 @@ bool registerBuiltinOpImporter(std::string op,
 }
 
 
-#if NV_TENSORRT_MAJOR >= 4
+#if NV_TENSORRT_MAJOR >= 6
 // Helper for ArgMax/ArgMin
 NodeImportResult argMinMaxHelper(IImporterContext* ctx,
     const ::ONNX_NAMESPACE::NodeProto& node, std::vector<TensorOrWeights>& inputs, nvinfer1::TopKOperation op)
@@ -521,7 +523,7 @@ DEFINE_BUILTIN_OP_IMPORTER(Add) {
       ctx, node, inputs, nvinfer1::ElementWiseOperation::kSUM, true);
 }
 
-#if NV_TENSORRT_MAJOR >= 4
+#if NV_TENSORRT_MAJOR >= 6
 DEFINE_BUILTIN_OP_IMPORTER(ArgMax)
 {
     return argMinMaxHelper(ctx, node, inputs, nvinfer1::TopKOperation::kMAX);
@@ -1441,7 +1443,7 @@ DEFINE_BUILTIN_OP_IMPORTER(Reciprocal) {
   return apply_unary_function(ctx, inputs.at(0), nvinfer1::UnaryOperation::kRECIP);
 }
 
-#if NV_TENSORRT_MAJOR >= 4
+#if NV_TENSORRT_MAJOR >= 6
 NodeImportResult reduceTensor(IImporterContext* ctx,
                               ::ONNX_NAMESPACE::NodeProto const& node,
                               TensorOrWeights input,
@@ -2024,7 +2026,7 @@ DEFINE_BUILTIN_OP_IMPORTER(ThresholdedRelu) {
          {&inputs.at(0).tensor()}));
 }
 
-#if NV_TENSORRT_MAJOR >= 4
+#if NV_TENSORRT_MAJOR >= 6
 DEFINE_BUILTIN_OP_IMPORTER(TopK) {
   ASSERT(inputs.at(0).is_tensor(), ErrorCode::kUNSUPPORTED_NODE);
   nvinfer1::ITensor& tensor = inputs.at(0).tensor();
@@ -2164,9 +2166,29 @@ DEFINE_BUILTIN_OP_IMPORTER(Upsample) {
 }
 
 DEFINE_BUILTIN_OP_IMPORTER(Mish) {
-    ASSERT(inputs.at(0).is_tensor(),  ErrorCode::kUNSUPPORTED_NODE); // input
+    ASSERT(inputs.at(0).is_tensor(),  ErrorCode::kUNSUPPORTED_NODE);
     RETURN_FIRST_OUTPUT(
           ctx->addPlugin(new MishPlugin(), {&inputs.at(0).tensor()}));
+}
+
+DEFINE_BUILTIN_OP_IMPORTER(ReduceSum) {
+    ASSERT(inputs.at(0).is_tensor(),  ErrorCode::kUNSUPPORTED_NODE);
+    OnnxAttrs attrs(node);
+    int axis = attrs.get("axis", 1);
+    ASSERT(axis == 1, ErrorCode::kUNSUPPORTED_NODE);
+    RETURN_FIRST_OUTPUT(
+          ctx->addPlugin(new ReduceSumPlugin(axis - 1), {&inputs.at(0).tensor()}));
+}
+
+DEFINE_BUILTIN_OP_IMPORTER(TopK) {
+    ASSERT(inputs.at(0).is_tensor(),  ErrorCode::kUNSUPPORTED_NODE);
+    OnnxAttrs attrs(node);
+    int axis = attrs.get("axis", 1);
+    int k = attrs.get("k", 1);
+    ASSERT(k == 1, ErrorCode::kUNSUPPORTED_NODE);
+    ASSERT(axis == 1, ErrorCode::kUNSUPPORTED_NODE);
+    RETURN_FIRST_OUTPUT(
+          ctx->addPlugin(new TopKPlugin(axis - 1), {&inputs.at(0).tensor()}));
 }
 
 } // namespace

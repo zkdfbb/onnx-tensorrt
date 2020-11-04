@@ -32,6 +32,7 @@ mkdir build && cd build
 
 function cx2(){
     cmake-3.10.2 \
+        -DCMAKE_INSTALL_PREFIX=/usr/local \
         -DTENSORRT_ROOT=/home/ais01/codes/wenbo/airbender-linux-devtools/tensorrt3 \
         -DGPU_ARCHS="62" \
         -DTX2=on ..
@@ -42,7 +43,10 @@ function cx2(){
 }
 
 function x86(){
-    cmake .. -DTENSORRT_ROOT=/usr/local/tensorrt -DGPU_ARCHS="61"
+    cmake \
+        -DCMAKE_INSTALL_PREFIX=/usr/local \
+        -DTENSORRT_ROOT=/usr/local/tensorrt \
+        -DGPU_ARCHS="61" ..
     make -j32
     sudo make install
 }
