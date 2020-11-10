@@ -86,7 +86,6 @@ REGISTER_BUILTIN_PLUGIN("Mish",                  MishPlugin);
 REGISTER_BUILTIN_PLUGIN("ElementWiseMul",        ElementWiseMulPlugin);
 REGISTER_BUILTIN_PLUGIN("ReduceSum",             ReduceSumPlugin);
 REGISTER_BUILTIN_PLUGIN("TopK",                  TopKPlugin);
-
 REGISTER_BUILTIN_NVPLUGIN("Concat", ConcatPlugin);
 
 } // namespace

@@ -25,12 +25,10 @@
 #include "plugin.hpp"
 #include "serialize.hpp"
 
-// #include <thrust/device_vector.h>
 #include <cassert>
 
 class TopKPlugin final : public onnx2trt::Plugin {
   int _axis;
-  nvinfer1::Dims _output_dims;
 protected:
   void deserialize(void const* serialData, size_t serialLength) {
     deserializeBase(serialData, serialLength);
@@ -50,7 +48,7 @@ public:
     this->deserialize(serialData, serialLength);
   }
   virtual const char* getPluginType() const override { return "TopK"; }
-  virtual int getNbOutputs() const override { return 1; }
+  virtual int getNbOutputs() const override { return 2; }
   virtual nvinfer1::Dims getOutputDimensions(int index,
                                              const nvinfer1::Dims *inputs, int nbInputDims) override;
   virtual int initialize() override;

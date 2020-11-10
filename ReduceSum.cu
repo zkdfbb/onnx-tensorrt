@@ -60,8 +60,8 @@ __global__ void reduce_sum(const int n,
 }
 
 int ReduceSumPlugin::enqueue(int batchSize,
-                                  const void *const *inputs, void **outputs,
-                                  void *workspace, cudaStream_t stream) {
+                             const void *const *inputs, void **outputs,
+                             void *workspace, cudaStream_t stream) {
   auto const& input_dims = this->getInputDims(0);
   const int channels = input_dims.d[0];
   const int input_height = input_dims.d[1];

@@ -68,6 +68,12 @@ namespace {
   return {{layer_ptr->getOutput(0)}}; \
 } while(0)
 
+#define RETURN_TWO_OUTPUT(layer) do { \
+  nvinfer1::ILayer* layer_ptr = layer; \
+  ASSERT(layer_ptr, ErrorCode::kUNSUPPORTED_NODE); \
+  return {{layer_ptr->getOutput(0), layer_ptr->getOutput(1)}}; \
+} while(0)
+
 #define RETURN_IDENTITY(input) do { \
   TensorOrWeights output = identity(ctx, input); \
   ASSERT(output, ErrorCode::kUNSUPPORTED_NODE); \
@@ -2187,7 +2193,7 @@ DEFINE_BUILTIN_OP_IMPORTER(TopK) {
     int k = attrs.get("k", 1);
     ASSERT(k == 1, ErrorCode::kUNSUPPORTED_NODE);
     ASSERT(axis == 1, ErrorCode::kUNSUPPORTED_NODE);
-    RETURN_FIRST_OUTPUT(
+    RETURN_TWO_OUTPUT(
           ctx->addPlugin(new TopKPlugin(axis - 1), {&inputs.at(0).tensor()}));
 }
 

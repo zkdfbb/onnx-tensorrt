@@ -25,19 +25,19 @@
 #include <cuda_fp16.h>
 #include <cassert>
 
+//设置output 的dim
 nvinfer1::Dims TopKPlugin::getOutputDimensions(int index,
                                                 const nvinfer1::Dims *inputDims,
                                                 int nbInputs) {
+
   assert(nbInputs == 1);
   assert(index < this->getNbOutputs());
-  nvinfer1::Dims output_dims = inputDims[0];
+  nvinfer1::Dims output_dims = inputDims[0];  
   output_dims.d[_axis] = 1;
-  cout << "topk outputs: " << output_dims.d[0] << " " << output_dims.d[1] <<  " " << output_dims.d[2] << endl;
   return output_dims;
 }
 
 int TopKPlugin::initialize() {
-  _output_dims = this->getOutputDimensions(0, &this->getInputDims(0), 1);
   return 0;
 }
 
@@ -45,7 +45,7 @@ template <typename Data>
 __global__ void top_k(const int n,
       const int batchsize, const int channels,
       const int height, const int width,
-      const Data *idata, Data *odata) {
+      const Data *idata, Data *odata, Data *vdata) {
   int idx = threadIdx.x + blockIdx.x * blockDim.x;
   if (idx < n) {
     for (int b = 0; b < batchsize; ++b) {
@@ -60,14 +60,15 @@ __global__ void top_k(const int n,
         idx += n;
       }
       odata[odx] = static_cast<Data>(index);
+      vdata[odx] = value;
     }
   }
 }
 
 int TopKPlugin::enqueue(int batchSize,
-                                  const void *const *inputs, void **outputs,
-                                  void *workspace, cudaStream_t stream) {
-  auto const& input_dims = this->getInputDims(0);
+                        const void *const *inputs, void **outputs,
+                        void *workspace, cudaStream_t stream) {
+  auto const& input_dims = this->getInputDims(0); // c w h  
   const int channels = input_dims.d[0];
   const int input_height = input_dims.d[1];
   const int input_width = input_dims.d[2];
@@ -79,7 +80,8 @@ int TopKPlugin::enqueue(int batchSize,
     top_k<<<num_blocks, num_threads>>>(num_kernels, batchSize, channels,
       input_height, input_width,
       static_cast<float const*>(inputs[0]),
-      static_cast<float*>(outputs[0]));
+      static_cast<float*>(outputs[0]),
+      static_cast<float*>(outputs[1]));
   } else {
     return -1;
   }
