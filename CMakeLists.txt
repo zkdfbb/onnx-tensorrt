@@ -110,6 +110,8 @@ set(PLUGIN_SOURCES
   ElementWiseMul.cu
   ReduceSum.cu
   TopK.cu
+  GridSampler.cu
+  Arange.cu
   InstanceNormalization.cpp
   plugin.cpp
   )

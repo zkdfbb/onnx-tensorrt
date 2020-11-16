@@ -33,9 +33,11 @@
 #include "TopK.hpp"
 #include "ElementWiseMul.hpp"
 #include "InstanceNormalization.hpp"
+#include "GridSampler.hpp"
+#include "Arange.hpp"
 
 #include <numeric> // For std::iota
-
+using namespace std;
 namespace onnx2trt {
 
 namespace {
@@ -2127,6 +2129,69 @@ DEFINE_BUILTIN_OP_IMPORTER(Unsqueeze) {
 }
 #endif // NV_TENSORRT_MAJOR >= 4
 
+DEFINE_BUILTIN_OP_IMPORTER(ATen){
+  /*
+  每一个node 会会被解析成一个 OnnxAttrs 对象
+    1.信息存储在成员变量 AttrMap _attr中 （是一个 unordered_map<string, T> ）
+    2.同时提供解析 _attr 的函数 get <"type"> (key)
+  */
+  OnnxAttrs attrs(node);
+  auto aten_name = attrs.get<std::string>("operator");
+
+  /*  
+    %399 : Long() = onnx::Constant[value={0}]()
+    %400 : Long() = onnx::Constant[value={1}]()
+    %401 : Long() = onnx::Constant[value={6}]()
+    %402 : Long() = onnx::Constant[value={0}]()
+    %403 : Device = onnx::Constant[value="cpu"]() 
+    %404 : Long() = onnx::Constant[value={0}]()
+
+    %405 : Float(63) = onnx::ATen[operator="arange"]
+    (%399, %374, %400, %401, %402, %403, %404)
+    */
+
+  if(aten_name == "arange"){
+    ASSERT(inputs.at(1).is_tensor(), ErrorCode::kUNSUPPORTED_NODE);
+      //arrange inputs(1) 是tensor
+      //ASSERT(inputs.size == n) 这里的n 是你自己写arrange 的时候带的参数
+      //比如torch.arange(0,out_h,dtype=torch.float32) * 2 / (out_h -1) - 1
+      nvinfer1::ITensor &tensor = inputs.at(1).tensor();
+      auto TensorOrweightsIze = inputs.size() -1;
+      //shapedWeights
+      std::vector<ShapedWeights> shape_weights {inputs.at(0).weights(),inputs.at(2).weights(),inputs.at(3).weights(),
+                             inputs.at(4).weights(),inputs.at(6).weights()};
+      auto type = inputs.at(0).weights().type;
+      auto shape =  inputs.at(0).weights().shape;
+      int  * values =(int*)inputs.at(0).weights().values;
+
+      std::cout<<values[0]<<std::endl;
+      RETURN_FIRST_OUTPUT(
+        ctx->addPlugin(new ArangePlugin(), {&inputs.at(1).tensor()}));
+  }
+      /*
+     %643 : Float(1, 128, 249, 236) = 
+     onnx::ATen[align_corners=0, interpolation_mode=0, operator="grid_sampler", padding_mode=0]
+     (%551, %642) 
+    */
+  else if(aten_name == "grid_sampler"){
+      std::vector<nvinfer1::ITensor*> tensors;
+      for(int i = 0;i<inputs.size();i++){
+        if(inputs[i].is_weights()){
+          tensors.push_back(&convert_output_weight_to_tensor(inputs[i],ctx));
+        }
+        else if(inputs[i].is_tensor()){
+          tensors.push_back(&inputs[i].tensor());
+        }
+      }
+      ASSERT(tensors.size() == inputs.size(), ErrorCode::kUNSUPPORTED_NODE);
+      RETURN_FIRST_OUTPUT(
+        ctx->addPlugin(new GridSamplerPlugin(), tensors)
+      );
+  }
+}
+/*
+%483 : Float(1, 64, 125, 118) = onnx::Upsample[mode="linear"](%472, %482) # 
+*/
 DEFINE_BUILTIN_OP_IMPORTER(Upsample) {
   ASSERT(inputs.at(0).is_tensor(), ErrorCode::kUNSUPPORTED_NODE);
   nvinfer1::ITensor &tensor = inputs.at(0).tensor();

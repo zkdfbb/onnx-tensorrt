@@ -31,6 +31,7 @@
 #include <NvInfer.h>
 
 #include <iostream>
+using namespace std;
 using std::cerr;
 using std::endl;
 
@@ -293,8 +294,8 @@ inline nvinfer1::ITensor& convertToTensor(TensorOrWeights& input, IImporterConte
     {
         std::cerr << "addConstant in convertToTensor" << std::endl;
         // Handle non-tensor indices input by adding a new constant layer to the network.
-        // const ShapedWeights& weights = input.weights();
-        // return *(ctx->network()->addConstant(weights.shape, weights)->getOutput(0));
+        const ShapedWeights& weights = input.weights();
+        return *(ctx->network()->addConstant(weights.shape, weights)->getOutput(0));
     }
 }
 
@@ -308,10 +309,10 @@ inline nvinfer1::ITensor& convert_output_weight_to_tensor(TensorOrWeights& input
     {
         std::cerr << "addConstant in convert_output_weight_to_tensor" << std::endl;
         // Convert weight output to tensor output. Strip batch dimension here.
-        // const ShapedWeights& weights = input.weights();
-        // nvinfer1::Dims tensor_shape = weights.shape;
-        // tensor_shape= set_dims_CHW(remove_dim(tensor_shape, 0));
-        // return *(ctx->network()->addConstant(tensor_shape, weights)->getOutput(0));
+        const ShapedWeights& weights = input.weights();
+        nvinfer1::Dims tensor_shape = weights.shape;
+        tensor_shape= set_dims_CHW(remove_dim(tensor_shape, 0));
+        return *(ctx->network()->addConstant(tensor_shape, weights)->getOutput(0));
     }
 }
 
@@ -323,6 +324,7 @@ inline int div_ceil(int n, int d) {
 inline Status convert_axis(int& axis, int nbDims)
 {
   // Support negative indexing
+  cout<<"1: axis: "<<axis<<" nbDims: "<<nbDims<<endl;
   if (axis < 0)
   {
     axis += nbDims;
@@ -332,6 +334,7 @@ inline Status convert_axis(int& axis, int nbDims)
   {
     axis = axis - 1;
   }
+  cout<<"2: axis: "<<axis<<" nbDims: "<<nbDims<<endl;
   ASSERT(axis >= 0 && axis < nbDims, ErrorCode::kUNSUPPORTED_NODE);
   return Status::success();
 }
