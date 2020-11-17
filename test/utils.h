@@ -22,18 +22,34 @@ enum init_type {ZERO, COMMON, GRID};
    template class classname<float,int>;  \
    template class classname<double,int>
 
+struct Dim
+{
+    int B_;
+    int C_;
+    int H_;
+    int W_;
+
+    Dim() : B_(0), C_(0), H_(0), W_(0) {}
+    Dim(int B, int C, int H, int W) : B_(B), C_(C), H_(H), W_(W) {}
+    Dim(int C, int H, int W) : B_(1), C_(C), H_(H), W_(W) {}
+    int size() { return B_ * C_ * H_ * W_; }
+};
+
+
 
 template<typename T1,typename T2>
 class cell{
 public:
   
     cell(int n,int c,int h,int w):n_(n),c_(c),h_(h),w_(w){
-        spatial_dim_ = h_*w_;
-        size_ = n_*c_*h_*w_;
-        host_ptr_ = (T1*) malloc(sizeof(T1)*size_);
-        memset(host_ptr_,0,sizeof(T1)*size_);
-        cudaMalloc(&device_ptr_, sizeof(T1)*size_);
-        cudaMemset(device_ptr_, 0x0, sizeof(T1)*size_);
+       this->init();
+    }
+    cell(Dim dim):dim_(dim){
+        n_ = dim_.B_;
+        c_ = dim_.C_;
+        h_ = dim_.H_;
+        w_ = dim_.W_;
+        this->init();
     }
     ~cell(){
         cudaFree(device_ptr_);
@@ -41,7 +57,8 @@ public:
             delete [] host_ptr_;
         host_ptr_ = NULL;
     }
-  //type 0 : grid data
+  
+  void init();
   void init_data(init_type type);
   void check_whole_data(init_type type);
   void check_part_data(int size);
@@ -49,10 +66,12 @@ public:
   void sync_D2H();
   void read_data(string filename);
   void write_data(int size,string filename);
+  void write_other_data(float*ptr,int size,string filename);
   T1* host_ptr();
   T1* device_ptr();
 
 private:
+  Dim dim_;
   int n_;
   int c_;
   int h_;

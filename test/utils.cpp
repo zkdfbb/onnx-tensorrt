@@ -1,4 +1,15 @@
 #include "utils.h"
+#include <opencv2/opencv.hpp>
+template<typename T1,typename T2>
+void cell<T1,T2>::init(){
+    size_ = n_*c_*h_*w_;
+    spatial_dim_ = h_*w_;
+    host_ptr_ = (T1*) malloc(sizeof(T1)*size_);
+    memset(host_ptr_,0,sizeof(T1)*size_);
+    cudaMalloc(&device_ptr_, sizeof(T1)*size_);
+    cudaMemset(device_ptr_, 0x0, sizeof(T1)*size_);
+}
+
 
 template<typename T1,typename T2>
 void cell<T1,T2>::init_data(init_type type){
@@ -93,6 +104,7 @@ void cell<T1,T2>::check_whole_data(init_type type){
     }
 }
 
+
 template<typename T1,typename T2>
 void cell<T1,T2>::read_data(string filename){
     char * buffer;
@@ -115,6 +127,16 @@ void cell<T1,T2>::write_data(int size,string filename){
 	dout.close();
 	cout << "Finish write "<<filename << endl;
 }
+
+template<typename T1,typename T2>
+void cell<T1,T2>::write_other_data(float*ptr,int size,string filename){
+    ofstream dout(filename);
+    for(int i=0;i<size;i++)
+		dout << ptr[i]<< endl;
+	dout.close();
+	cout << "Finish write "<<filename << endl;
+}
+
 
 
 template<typename T1,typename T2>

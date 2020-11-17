@@ -11,6 +11,6 @@
 
 test -e build && rm -rf build
 mkdir build && cd build
-cmake .. -DCMAKE_62=on
+cmake .. -DCMAKE_62=on -DWRITTEN=off
 make -j8
 cd ..
