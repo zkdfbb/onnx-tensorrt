@@ -70,14 +70,14 @@ int BaseNet::build(const string &trt_name)
     for (int i = 0; i < input_names_.size(); ++i)
     {
         int index = engine_->getBindingIndex(input_names_[i].c_str());
-        cout << "input " << input_names_[i] << " index " << index << endl;
+        cout << "input layer: " << input_names_[i] << " index " << index << endl;
         input_indices_.push_back(index);
         CHECK(cudaMalloc(&buffers_[index], input_sizes_[i] * sizeof(float)));
     }
     for (int i = 0; i < output_names_.size(); ++i)
     {
         int index = engine_->getBindingIndex(output_names_[i].c_str());
-        cout << "output " << output_names_[i] << " index " << index << endl;
+        cout << "output layer: " << output_names_[i] << " index " << index << endl;
         output_indices_.push_back(index);
         CHECK(cudaMalloc(&buffers_[index], output_sizes_[i] * sizeof(float)));
     }
@@ -112,7 +112,6 @@ void BaseNet::infer(vector<float *> &inputs)
 
 void BaseNet::get_buffer(vector<float *> &outputs)
 {
-    cout << "get output buffer" << endl;
     for (int i = 0; i < output_sizes_.size(); ++i)
     {
         int index = output_indices_[i];
@@ -135,5 +134,30 @@ void BaseNet::debug(int size)
             cout << outputs[i][j] << " ";
         }
         cout << endl;
+    }
+}
+
+void BaseNet::diff(vector<cv::Mat > & torch_outputs,bool every_pixel){
+    vector<float *> outputs(output_sizes_.size());
+    this->get_buffer(outputs);
+    for (int i = 0; i < output_sizes_.size(); ++i){
+        cout <<"check diff in layer : "<< output_names_[i] <<endl;
+        int size = output_sizes_[i];
+        cv::Mat out_mat(1,size,CV_32F,outputs[i]);
+        cv::Mat absDiff = cv::abs(out_mat - torch_outputs[i]);
+        if(every_pixel){
+            cout<<"diff"<<endl;
+            for(int j = 0;j<output_sizes_[i];j++){
+                cout<<j<<": "<<((float*)out_mat.data)[j]<<" "<<((float*)torch_outputs[i].data)[j]<<" "<<((float*)absDiff.data)[j]<<endl;
+            }
+        }
+        cv::Mat tmp_m, tmp_sd;  
+        double m = 0, sd = 0;  
+    
+        m = cv::mean(absDiff)[0]; 
+        cv::meanStdDev(absDiff, tmp_m, tmp_sd);  
+        m = tmp_m.at<double>(0,0);  
+        sd = tmp_sd.at<double>(0,0);  
+        cout << "diff Mean: " << m << " ,diff StdDev: " << sd << endl;  
     }
 }

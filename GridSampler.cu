@@ -1,7 +1,8 @@
 #include "GridSampler.hpp"
 #include <cuda_fp16.h>
 #include <cassert>
-
+#include <iostream>
+#include <fstream>
 
 //设置output 的dim
 nvinfer1::Dims GridSamplerPlugin::getOutputDimensions(int index,
@@ -145,7 +146,7 @@ __global__ void SpatialGridSamplerBilinear(
         Dtype out_val = 0;
         #pragma unroll
         for(c = 0;c<C;++c){
-            out_val = ScalarConvert<int,Dtype>::to(0);
+            out_val = static_cast<Dtype>(0);
             if (WITHIN_BOUNDS(ix_nw, iy_nw, IH, IW)) {
                 out_val += input[n * C * spatial_dim + c * spatial_dim + iy_nw * IW + ix_nw] * nw; 
             }
@@ -169,14 +170,15 @@ int GridSamplerPlugin::enqueue(int batchSize,
     
     auto const& input_dims_f = this->getInputDims(0);
     auto const& input_dims_g = this->getInputDims(1);
-    const int grid_h = input_dims_g.d[1];
-    const int grid_w = input_dims_g.d[2];
+    const int grid_h = input_dims_g.d[0];
+    const int grid_w = input_dims_g.d[1];
+    const int idx_count = input_dims_g.d[2];
     const int IH = input_dims_f.d[1];
     const int IW = input_dims_f.d[2];
     const int C =input_dims_f.d[0];
     int threadPerBlock = 128;
     int blockPerGrid = 256;
-    const int nthreads = batchSize * 2 * grid_h * grid_w;
+    const int nthreads = batchSize  * grid_h * grid_w * idx_count;
     const float *input = static_cast<float const*>(inputs[0]);
     const float *grid  = static_cast<float const*>(inputs[1]);
     float *output = static_cast<float *>(outputs[0]);

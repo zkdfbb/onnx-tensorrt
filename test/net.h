@@ -8,23 +8,13 @@
 #include "NvOnnxParserRuntime.h"
 #include "NvInfer.h"
 #include "common.h"
+#include "utils.h"
 
 
 using namespace std;
 static Logger gLogger;
 
-struct Dim
-{
-    int B_;
-    int C_;
-    int H_;
-    int W_;
 
-    Dim() : B_(0), C_(0), H_(0), W_(0) {}
-    Dim(int B, int C, int H, int W) : B_(B), C_(C), H_(H), W_(W) {}
-    Dim(int C, int H, int W) : B_(1), C_(C), H_(H), W_(W) {}
-    int size() { return B_ * C_ * H_ * W_; }
-};
 
 class BaseNet
 {
@@ -37,6 +27,7 @@ public:
     void infer(vector<float *> &inputs);
     void get_buffer(vector<float *> &outputs);
     void debug(int size);
+    void diff(vector<cv::Mat > & torch_outputs,bool every_pixel = false);
 
 private:
     int batch_size_;

@@ -6,8 +6,12 @@ SET(CMAKE_CXX_FLAGS "-std=c++11 -g -Wno-write-strings")
 SET(CMAKE_BUILD_TYPE "Release")
 add_compile_options(-fPIC)
 
+
+
 SET(PROJECT "trt_check")
+
 OPTION(CMAKE_62 "Whether cmake on server 62" OFF)
+OPTION(WRITTEN "Whether enable the WRITTEN" OFF)
 
 if(NOT CMAKE_62)
     SET(AIRBENDER_DEV_ROOT /home/ais01/codes/wenbo/airbender-linux-devtools)
