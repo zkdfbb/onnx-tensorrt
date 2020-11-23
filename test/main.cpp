@@ -3,33 +3,30 @@
 #include <iostream>
 #include "utils.h"
 
-vector<string> input_names = {"in","grid"};
-vector<Dim> input_dims = {Dim(12,20,20),Dim(2,30,30)};
+vector<string> input_names = {"in"};
+vector<Dim> input_dims = {Dim(128,120,112)};
 vector<string> output_names = {"ooo"};
-vector<Dim> output_dims = {Dim(12, 30, 30)};
+vector<Dim> output_dims = {Dim(128, 125, 118)};
 
 
 
 int main(int argc, char **argv)
 {
     
-    string trt_name = "data/2.trt";
-    string input_name = "data/input.bin";
-    string grid_name = "data/grid.bin";
-    string pytorch_output_name = "data/pytorch_2.bin";
-    
-
-    
+    string trt_name = "/media/app/sapa_linhao/onnx-tensorrt/build/2.trt";
+    string input_name = "/media/app/sapa_linhao/input.bin";
+    //string grid_name = "data/grid.bin";
+    string pytorch_output_name = "/media/app/sapa_linhao/output.bin";
     
     // cell<float,int>* in_data = new cell<float,int>(1,12,20,20);
     cell<float,int>* in_data = new cell<float,int>(input_dims[0]);
     in_data->read_data(input_name);
 
     //cell<float,int>* grid_data= new cell<float,int>(1,2,30,30);
-    cell<float,int>* grid_data= new cell<float,int>(input_dims[1]);
-    grid_data->read_data(grid_name);
+    // cell<float,int>* grid_data= new cell<float,int>(input_dims[1]);
+    // grid_data->read_data(grid_name);
 
-    vector<float *> inputs = {in_data->host_ptr(),grid_data->host_ptr()};
+    vector<float *> inputs = {in_data->host_ptr()};
 
     cout << "the   complete file is in a buffer ";
 

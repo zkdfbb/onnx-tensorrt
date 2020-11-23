@@ -52,7 +52,14 @@ nvinfer1::Dims ResizeBilinearPlugin::getOutputDimensions(int index,
     for( int d=0; d<input.nbDims; ++d ) {
         output.type[d] = input.type[d];
         if( input.type[d] == nvinfer1::DimensionType::kSPATIAL ) {
-            output.d[d] = int(input.d[d] * _scale[s++]);
+            auto tmp = input.d[d] * _scale[s];
+            if(abs(tmp-ceil(tmp))>=abs(tmp-floor(tmp))){
+                output.d[d] = floor(tmp);
+            }
+            else{
+                output.d[d] = ceil(tmp);
+            }
+            s++;
         } else {
             output.d[d] = input.d[d];
         }
