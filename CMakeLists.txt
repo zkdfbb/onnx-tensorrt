@@ -141,7 +141,6 @@ set(API_TESTS_SOURCES
   ModelImporter.cpp
 )
 
-
 set(HEADERS
   NvOnnxParser.h
   NvOnnxParserRuntime.h
