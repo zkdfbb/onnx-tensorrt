@@ -31,6 +31,7 @@
 #include "ElementWiseMul.hpp"
 #include "ReduceSum.hpp"
 #include "TopK.hpp"
+#include "Equal.hpp"
 #include "Split.hpp"
 #include "InstanceNormalization.hpp"
 #include "GridSampler.hpp"
@@ -87,6 +88,7 @@ REGISTER_BUILTIN_PLUGIN("Mish",                  MishPlugin);
 REGISTER_BUILTIN_PLUGIN("ElementWiseMul",        ElementWiseMulPlugin);
 REGISTER_BUILTIN_PLUGIN("ReduceSum",             ReduceSumPlugin);
 REGISTER_BUILTIN_PLUGIN("TopK",                  TopKPlugin);
+REGISTER_BUILTIN_PLUGIN("Equal",                 EqualPlugin);
 REGISTER_BUILTIN_PLUGIN("GridSampler", GridSamplerPlugin);
 REGISTER_BUILTIN_PLUGIN("Arange", ArangePlugin);
 REGISTER_BUILTIN_NVPLUGIN("Concat", ConcatPlugin);

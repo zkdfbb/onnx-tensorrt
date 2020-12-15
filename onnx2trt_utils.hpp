@@ -324,7 +324,6 @@ inline int div_ceil(int n, int d) {
 inline Status convert_axis(int& axis, int nbDims)
 {
   // Support negative indexing
-  cout<<"1: axis: "<<axis<<" nbDims: "<<nbDims<<endl;
   if (axis < 0)
   {
     axis += nbDims;
@@ -334,7 +333,6 @@ inline Status convert_axis(int& axis, int nbDims)
   {
     axis = axis - 1;
   }
-  cout<<"2: axis: "<<axis<<" nbDims: "<<nbDims<<endl;
   ASSERT(axis >= 0 && axis < nbDims, ErrorCode::kUNSUPPORTED_NODE);
   return Status::success();
 }

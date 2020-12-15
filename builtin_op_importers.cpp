@@ -31,6 +31,7 @@
 #include "Split.hpp"
 #include "ReduceSum.hpp"
 #include "TopK.hpp"
+#include "Equal.hpp"
 #include "ElementWiseMul.hpp"
 #include "InstanceNormalization.hpp"
 #include "GridSampler.hpp"
@@ -2260,6 +2261,16 @@ DEFINE_BUILTIN_OP_IMPORTER(TopK) {
     ASSERT(axis == 1, ErrorCode::kUNSUPPORTED_NODE);
     RETURN_TWO_OUTPUT(
           ctx->addPlugin(new TopKPlugin(axis - 1), {&inputs.at(0).tensor()}));
+}
+
+DEFINE_BUILTIN_OP_IMPORTER(Equal) {
+    std::vector<nvinfer1::ITensor*> tensors;
+    for( auto& input : inputs ) {
+      ASSERT(input.is_tensor(), ErrorCode::kUNSUPPORTED_NODE);
+      tensors.push_back(&input.tensor());
+    }
+    RETURN_FIRST_OUTPUT(
+          ctx->addPlugin(new EqualPlugin(), {tensors}));
 }
 
 } // namespace

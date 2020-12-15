@@ -201,6 +201,7 @@ NodeImportResult ModelImporter::importNode(::ONNX_NAMESPACE::NodeProto const& no
   std::vector<TensorOrWeights> outputs;
 
   GET_VALUE(node_importer(&_importer_ctx, node, inputs), &outputs);
+
   ASSERT(outputs.size() <= (size_t)node.output().size(), ErrorCode::kINTERNAL_ERROR);
 
   // Check if output's node name is a graph's output.

@@ -110,6 +110,7 @@ set(PLUGIN_SOURCES
   ElementWiseMul.cu
   ReduceSum.cu
   TopK.cu
+  Equal.cu
   GridSampler.cu
   Arange.cu
   InstanceNormalization.cpp
