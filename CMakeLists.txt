@@ -113,6 +113,7 @@ set(PLUGIN_SOURCES
   Equal.cu
   GridSampler.cu
   Arange.cu
+  Expand.cu
   InstanceNormalization.cpp
   plugin.cpp
   )

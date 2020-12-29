@@ -36,6 +36,7 @@
 #include "InstanceNormalization.hpp"
 #include "GridSampler.hpp"
 #include "Arange.hpp"
+#include "Expand.hpp"
 
 #include <numeric> // For std::iota
 using namespace std;
@@ -2056,6 +2057,25 @@ DEFINE_BUILTIN_OP_IMPORTER(TopK) {
   return {{layer->getOutput(0), layer->getOutput(1)}};
 }
 #endif // NV_TENSORRT_MAJOR >= 4
+
+DEFINE_BUILTIN_OP_IMPORTER(Expand) 
+{
+  cout << "WARNING: Now expand only support B*C*1*1 -> B*C*H*W, if you have any question, please contact xuejie.lv@nio.com" << endl;
+  ASSERT(inputs.at(0).is_tensor(), ErrorCode::kUNSUPPORTED_NODE);
+  ASSERT(inputs.at(1).is_weights(), ErrorCode::kUNSUPPORTED_NODE);
+  /*
+  for(int i=0;i<weights.shape.nbDims;i++){
+    cout << "shape " << i << " " << weights.shape.d[i] << endl;
+  }
+  */
+  int *values =(int*)inputs.at(1).weights().values;
+  // cout << values[0] << endl;
+  // cout << values[1] << endl;
+  // cout << values[2] << endl;
+  // cout << values[3] << endl;
+  // ctx->addPlugin(new SlicePlugin(axis, starts[i], ends[i]), {&inputs.at(0).tensor()}));
+  RETURN_FIRST_OUTPUT( ctx->addPlugin(new ExpandPlugin(values[2], values[3]), {&inputs.at(0).tensor()}) );
+}
 
 DEFINE_BUILTIN_OP_IMPORTER(Transpose) {
   TensorOrWeights input = inputs.at(0);

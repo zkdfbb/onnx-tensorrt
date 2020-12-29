@@ -36,6 +36,7 @@
 #include "InstanceNormalization.hpp"
 #include "GridSampler.hpp"
 #include "Arange.hpp"
+#include "Expand.hpp"
 
 namespace onnx2trt {
 
@@ -89,9 +90,11 @@ REGISTER_BUILTIN_PLUGIN("ElementWiseMul",        ElementWiseMulPlugin);
 REGISTER_BUILTIN_PLUGIN("ReduceSum",             ReduceSumPlugin);
 REGISTER_BUILTIN_PLUGIN("TopK",                  TopKPlugin);
 REGISTER_BUILTIN_PLUGIN("Equal",                 EqualPlugin);
-REGISTER_BUILTIN_PLUGIN("GridSampler", GridSamplerPlugin);
-REGISTER_BUILTIN_PLUGIN("Arange", ArangePlugin);
-REGISTER_BUILTIN_NVPLUGIN("Concat", ConcatPlugin);
+REGISTER_BUILTIN_PLUGIN("Expand",                ExpandPlugin);
+REGISTER_BUILTIN_PLUGIN("GridSampler",           GridSamplerPlugin);
+REGISTER_BUILTIN_PLUGIN("Arange",                ArangePlugin);
+REGISTER_BUILTIN_NVPLUGIN("Concat",              ConcatPlugin);
+
 
 } // namespace
 
