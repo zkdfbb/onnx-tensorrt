@@ -34,7 +34,7 @@
 #include "Equal.hpp"
 #include "Split.hpp"
 #include "InstanceNormalization.hpp"
-#include "GridSampler.hpp"
+// #include "GridSampler.hpp"
 #include "Arange.hpp"
 #include "Expand.hpp"
 
@@ -91,7 +91,7 @@ REGISTER_BUILTIN_PLUGIN("ReduceSum",             ReduceSumPlugin);
 REGISTER_BUILTIN_PLUGIN("TopK",                  TopKPlugin);
 REGISTER_BUILTIN_PLUGIN("Equal",                 EqualPlugin);
 REGISTER_BUILTIN_PLUGIN("Expand",                ExpandPlugin);
-REGISTER_BUILTIN_PLUGIN("GridSampler",           GridSamplerPlugin);
+// REGISTER_BUILTIN_PLUGIN("GridSampler",           GridSamplerPlugin);
 REGISTER_BUILTIN_PLUGIN("Arange",                ArangePlugin);
 REGISTER_BUILTIN_NVPLUGIN("Concat",              ConcatPlugin);
 

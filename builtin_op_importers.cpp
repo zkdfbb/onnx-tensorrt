@@ -34,7 +34,7 @@
 #include "Equal.hpp"
 #include "ElementWiseMul.hpp"
 #include "InstanceNormalization.hpp"
-#include "GridSampler.hpp"
+// #include "GridSampler.hpp"
 #include "Arange.hpp"
 #include "Expand.hpp"
 
@@ -2189,11 +2189,8 @@ DEFINE_BUILTIN_OP_IMPORTER(ATen){
       RETURN_FIRST_OUTPUT(
         ctx->addPlugin(new ArangePlugin(), {&inputs.at(1).tensor()}));
   }
-      /*
-     %643 : Float(1, 128, 249, 236) = 
-     onnx::ATen[align_corners=0, interpolation_mode=0, operator="grid_sampler", padding_mode=0]
-     (%551, %642) 
-    */
+ 
+  /*
   else if(aten_name == "grid_sampler"){
       std::vector<nvinfer1::ITensor*> tensors;
       for(int i = 0;i<inputs.size();i++){
@@ -2209,6 +2206,7 @@ DEFINE_BUILTIN_OP_IMPORTER(ATen){
         ctx->addPlugin(new GridSamplerPlugin(), tensors)
       );
   }
+  */
 }
 /*
 %483 : Float(1, 64, 125, 118) = onnx::Upsample[mode="linear"](%472, %482) # 
