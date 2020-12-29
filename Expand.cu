@@ -7,10 +7,8 @@ nvinfer1::Dims ExpandPlugin::getOutputDimensions(int index,
 {
     assert(nbInputs == 1);
     assert(index < this->getNbOutputs());
-    nvinfer1::Dims output_dims;
-    output_dims.d[0] = 64;
-    output_dims.d[1] = 96;
-    output_dims.d[2] = 104;
+    nvinfer1::Dims const& input_dims = inputDims[0];
+    nvinfer1::Dims output_dims = input_dims;
     return output_dims;
 }
 int ExpandPlugin::initialize()
