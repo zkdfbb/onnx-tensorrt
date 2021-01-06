@@ -7,12 +7,22 @@ nvinfer1::Dims ExpandPlugin::getOutputDimensions(int index,
 {
     assert(nbInputs == 1);
     assert(index < this->getNbOutputs());
-    nvinfer1::Dims const& input_dims = inputDims[0];
-    nvinfer1::Dims output_dims = input_dims;
-    return output_dims;
+    nvinfer1::Dims const& input = inputDims[0];
+    
+    nvinfer1::Dims output;
+    output.nbDims = input.nbDims;
+    for( int d=0; d<input.nbDims; ++d )
+    {
+        output.type[d] = input.type[d];
+    }
+    output.d[0] = input.d[0];
+    output.d[1] = _output_height;
+    output.d[2] = _output_width;
+    return output;
 }
 int ExpandPlugin::initialize()
 {
+    _output_dims = this->getOutputDimensions(0, &this->getInputDims(0), 1);
     return 0;
 }
 __global__ void tile(const float *input,float *output,int n, int dim,int w,int h,int c)
@@ -32,15 +42,19 @@ int ExpandPlugin::enqueue(int batchSize,
     auto const& input_dims = this->getInputDims(0);
     const int channels = input_dims.d[0];
     const int num_threads = 256;
-    const int n = _output_width * _output_height * channels * batchSize;
-    const int dim = _output_width * _output_height * channels;
+    const int output_height = _output_dims.d[1];
+    const int output_width = _output_dims.d[2];
+    const int n = output_width * output_height * channels * batchSize;
+    const int dim = output_width * output_height * channels;
     const int num_blocks = (n + num_threads - 1 ) / num_threads;
     const float *input = static_cast<float const*>(inputs[0]);
     float *output = static_cast<float *>(outputs[0]);
-    // cout << "output hhhhhhhh " << output_height << output_width << channels <<  endl;
+    // cout << "output height " << output_height << endl;
+    // cout << "output width" << output_width << endl;
+    // cout << "chanensls " << channels << endl;
     if (getDataType() == nvinfer1::DataType::kFLOAT) 
     {
-        tile<<<num_blocks,num_threads>>>(input,output,n,dim,_output_width,_output_height,channels);
+        tile<<<num_blocks,num_threads>>>(input,output,n,dim,output_width,output_height,channels);
     } 
     else
     {

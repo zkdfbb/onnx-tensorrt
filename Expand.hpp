@@ -8,6 +8,7 @@
 class ExpandPlugin final : public onnx2trt::Plugin {
   int _output_height;
   int _output_width;
+  nvinfer1::Dims _output_dims;
 protected:
   void deserialize(void const* serialData, size_t serialLength) {
     deserializeBase(serialData, serialLength);
